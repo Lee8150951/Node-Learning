@@ -204,3 +204,132 @@ server.listen(3000, function() {
 })
 ````
 
+## Day02
+
+### 代码风格
+
+JavaScript有两种比较成熟的代码风格：①JavaScript Standard Style；②Airbnb JavaScript Style
+
+注意：无分号风格的代码中，要注意一行代码以` (  [ 开头的时候应该在开头处加上一个分号，如下
+
+````javascript
+;`hello`.toString()
+;(function() {
+    console.log('hello world')
+})
+````
+
+### 模拟构建Apache
+
+````javascript
+const http = require('http')
+const fs = require('fs')
+const server = http.createServer()
+// 静态统一路径
+const wwwDir = 'D:/学习/后端开发/Node.js/day02/assets'
+
+server.on('request', function (req, res) {
+  var url = req.url
+  var filePath = '/index.html'
+  if (url !== '/') {
+    filePath = url
+  }
+  fs.readFile(wwwDir + filePath, function (err, data) {
+    if (err) {
+      return res.end('404 Not Found')
+    }
+    res.end(data)
+  })
+})
+
+server.listen(8080, function () {
+  console.log('running...')
+})
+````
+
+### 模板引擎使用
+
+在node.js中支持template的使用，本项目中使用了art-template模板
+
+**在html使用模板语法引擎**
+
+````html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h3>模板引擎不关心内容，只关心自己认识的模板标记语法</h3>
+  <!-- 引入template文件 -->
+  <script src="../node_modules/art-template/lib/template-web.js"></script>
+  <script type="text/template" id="tpl">
+    Hello, {{name}}
+    Hobbies: {{each hobbies}} {{$value}} {{/each}}
+  </script>
+  <script>
+    var ret = template('tpl', {
+      name: 'Jack',
+      age: 23,
+      hobbies: [
+        'basketball', 'singing', 'game'
+      ]
+    })
+    console.log(ret);
+  </script>
+</body>
+</html>
+````
+
+**在node.js使用模板引擎**
+
+在使用前使用npm进行安装
+
+````shell
+npm install art-template
+````
+
+在js中使用：
+
+````javascript
+const template = require('art-template')
+
+var tplStr = `
+  Hello, {{name}}
+  Hobbies: {{each hobbies}} {{$value}} {{/each}}
+`
+var ret = template.render(tplStr, {
+  name: 'Jack',
+  age: 23,
+  hobbies: [
+    'basketball', 'singing', 'game'
+  ]
+})
+console.log(ret);
+````
+
+### 客户端渲染和服务端渲染
+
+客户端渲染：不利于被SEO搜索引擎优化（AJAX属于客户端渲染）
+
+服务端渲染：可以被爬虫抓取到，数据直接在服务端被渲染完成后回传
+
+**真正的网站不是纯异步也不是纯服务端渲染出来的，都是两者结合产生的**（符合不同界面的需求）
+
+### 重定向
+
+如何通过服务器让客户端进行重定向？
+
+1、状态码设置为302（临时重定向）--> statusCode
+
+2、在响应头中通过Location告诉客户端向哪里进行重定向 --> setHeader
+
+````javascript
+res.statusCode = 302
+res.setHeader('Location', '/')
+res.end()
+````
+

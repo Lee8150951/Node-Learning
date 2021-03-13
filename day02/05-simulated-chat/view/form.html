@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/bootstrap.css">
+  <link rel="stylesheet" href="/public/css/form.css">
+</head>
+<body>
+  <div class="main">
+    <h2 class="title">Chat Form</h2>
+    <div class="row form">
+      <div class="col-md-4">
+        <form action="/submit" action="get">
+          <div class="form-group">
+            <input type="text" class="form-control" name="name" placeholder="Name...">
+          </div>
+          <div class="form-group">
+            <textarea rows="4" type="text" name="info" class="form-control textarea-form"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary sub-btn">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

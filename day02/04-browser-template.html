@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h3>模板引擎不关心内容，只关心自己认识的模板标记语法</h3>
+  <!-- 引入template文件 -->
+  <script src="../node_modules/art-template/lib/template-web.js"></script>
+  <script type="text/template" id="tpl">
+    Hello, {{name}}
+    Hobbies: {{each hobbies}} {{$value}} {{/each}}
+  </script>
+  <script>
+    var ret = template('tpl', {
+      name: 'Jack',
+      age: 23,
+      hobbies: [
+        'basketball', 'singing', 'game'
+      ]
+    })
+    console.log(ret);
+  </script>
+</body>
+</html>
