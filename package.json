@@ -1,0 +1,24 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "Node.js 是一个开源与跨平台的 JavaScript 运行时环境，构建于Chrome的V8引擎之上",
+  "main": "index.js",
+  "dependencies": {
+    "art-template": "^4.13.2",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lee8150951/Node-Learning.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lee8150951/Node-Learning/issues"
+  },
+  "homepage": "https://github.com/Lee8150951/Node-Learning#readme"
+}

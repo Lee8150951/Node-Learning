@@ -311,7 +311,7 @@ var ret = template.render(tplStr, {
 console.log(ret);
 ````
 
-### 客户端渲染和服务端渲染
+### 客户端渲染与服务端渲染
 
 客户端渲染：不利于被SEO搜索引擎优化（AJAX属于客户端渲染）
 
@@ -331,5 +331,111 @@ console.log(ret);
 res.statusCode = 302
 res.setHeader('Location', '/')
 res.end()
+````
+
+## Day03
+
+### Node模块系统
+
+使用node编写应用程序主要是在使用：EcmaScript语言、核心模块、第三方模块、自己写的模块。
+
+模块间的通信规则：加载(require)，导出(exports)
+
+**注意：核心模块的require('模块标识符')，中间写的并不是路径，而是模块标识符**
+
+````javascript
+var foo = 'bar'
+function add (a, b) {
+  return a + b
+}
+exports.add = add
+// exports是一个对象，可以多次为这个对象添加成员实现
+exports.str = 'hello world'
+exports.foo = foo
+
+// 如果某个模块需要直接导出某个成员，而不是挂载的方式应使用以下方式
+// module.exports = add
+````
+
+````javascript
+var fooExports = require('./foo')
+console.log(fooExports);
+````
+
+**注意：exports可以导出多个（exports挂载的方式），也可以只导出一个（module.exports的方式）**
+
+### module.exports与exports
+
+在node中每个模块内部都存在一个自己的module对象
+
+在该module对象中都有一个成员exports（也是一个对象）
+
+结构相当于
+
+````javascript
+var module = {
+    exports: {
+        ...
+    }
+}
+````
+
+如果只需要向外导出成员，只需要把导出的成员挂载到module.exports上
+
+node内部为了简化操作避免用户频繁的使用module.exports.***来挂载对象，专门提供了一个exports = module.exports来优化代码
+
+所以在挂载多个成员时使用exports.***即可
+
+但是如果在只需要导出一个变量时需要将module.exports重新定义为导出的成员
+
+### require加载规则
+
+**优先从缓存加载**
+
+在node.js中，模块加载会直接从缓存中加载，目的是为了避免重复加载，提高模块的加载效率
+
+### 常用NPM命令
+
+下载命令：npm install *** （-S保存依赖项）
+
+卸载命令：npm uninstall ***
+
+升级NPM：npm install --global npm
+
+初始化：npm init (-y) （-y可以跳过安装过程）
+
+查看帮助：npm help
+
+### Express框架入门
+
+Express框架的目的就是提高效率，是代码更加统一
+
+使用过程：
+
+````javascript
+// 0、安装
+// 1、引包
+var express = require('express')
+// 2、创建服务器应用程序
+// http.createServer
+var app = express()
+
+// 静态资源服务（公开指定）
+// 只要这样做了就可以直接通过/public/**的方式访问public中的所有资源
+app.use('/public/', express.static('./public/'))
+app.use('/static/', express.static('./static/'))
+
+app.get('/', function (req, res) {
+  res.send('hello express!')
+})
+
+app.get('/about', function (req, res) {
+  res.send('This is About..')
+})
+
+// 相当于server.listen
+app.listen(8080, function () {
+  console.log('app is running...');
+})
 ````
 
