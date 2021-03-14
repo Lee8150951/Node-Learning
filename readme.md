@@ -439,3 +439,268 @@ app.listen(8080, function () {
 })
 ````
 
+## Day04
+
+### Nodemon插件
+
+使用nodemon工具启动服务解决频繁修改代码重启服务器的作用
+
+````shell
+npm install --global nodemon
+
+# 以前使用的是node app.js启动服务
+# 现在使用nodemon app.js启动即可
+nodemon app.js
+````
+
+nodemon会监视文件的变化，自动重启服务器
+
+**Tips：凡是npm安装命令添加了--global，做所有文件夹均可执行**，属于全局安装
+
+### 理解路由
+
+从一方面来看，路由实质上就是一张表，里面存储的是不同的映射关系
+
+在node.js中app.get就是对路由的一种映射，如：
+
+使用get方法请求'/'执行
+
+````javascript
+// 请求'/'，执行以下函数
+app.get('/', function (req, res) {
+  res.send('hello express!')
+})
+````
+
+使用post方法请求'/'执行
+
+````javascript
+// 请求'/'，执行以下函数
+app.post('/', function (req, res) {
+  res.send('hello express!')
+})
+````
+
+### 静态资源访问
+
+方法一：
+
+````javascript
+app.use('/public/', express.static('./public/'))
+// 访问localhost:8080/public/main.html即可直接访问
+````
+
+方法二：
+
+````javascript
+app.user(express.static('./public/'))
+// 访问localhost:8080/main.html即可直接访问
+````
+
+实际上第一种写法的第一个参数是对第二参数的一种别名
+
+### 配置art-template模板引擎
+
+安装：
+
+````shell
+npm install --save art-template
+npm install --save express-art-template
+````
+
+配置：
+
+````javascript
+app.use('/public/', express.static('./public/'))
+````
+
+使用：
+
+````javascript
+app.get('/admin', function (req, res) {
+  res.render('admin/index.html', {
+    name: 'Jacob'
+  })
+})
+````
+
+### 重写记事本功能
+
+````javascript
+const express = require('express')
+const app = express()
+const url = require('url')
+const date = new Date();
+
+const chats = [
+  {
+    name: 'jacob',
+    info: 'skksk',
+    chat_time: '2020'
+  }
+]
+
+// 配置使用art-template
+// 以.art为结尾的文件时，使用art-template引擎渲染
+// express存在一个约定：开发人员将所有的试图文件都放在views目录中
+app.engine('html', require('express-art-template'))
+
+
+app.use('/public/', express.static('./public/'))
+
+app.get('/', function (req, res) {
+  res.render('index.html', {
+    chats: chats
+  })
+})
+
+app.get('/form', function (req, res) {
+  res.render('form.html')
+})
+
+app.get('/submit', function (req, res) {
+  const chatObj = req.query
+  chatObj.chat_time = date.toLocaleString()
+  chats.unshift(chatObj)
+  res.redirect('/')
+})
+
+app.get('/admin', function (req, res) {
+  res.render('admin/index.html', {
+    name: 'Jacob'
+  })
+})
+
+app.listen(8080, function () {
+  console.log('Server is running...');
+})
+````
+
+### Post方法在框架下的写法
+
+获取post数据需要结合第三方包：body-parser
+
+````shell
+npm install body-parser
+````
+
+引包：
+
+````javascript
+const bodyParser = require('body-parser')
+````
+
+只要加入了这个配置，则在req请求对象上会多出一个属性：body
+
+可以直接使用req.body来获取表单POST请求体数据
+
+配置：
+
+````javascript
+app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.json())
+````
+
+使用：
+
+````javascript
+// 当以POST请求/submit的时候执行指定处理函数
+app.post('/submit', function (req, res) {
+  const chatObj = req.body
+  chatObj.chat_time = date.toLocaleString()
+  chats.unshift(chatObj)
+  res.redirect('/')
+})
+````
+
+### CRUD模拟
+
+构建完整项目步骤
+
+1、创建项目，在其中创建views、public等基本文件夹
+
+2、npm init 对项目进行npm初始化
+
+3、npm install -S express 使用Express框架
+
+4、新建app.js
+
+5、初始化app.js，构成最基本的hello world
+
+````javascript
+const express = require('express')
+const app = express()
+
+app.get('/', function (req, res) {
+  res.send('hello world')
+})
+
+app.listen(8080, function () {
+  console.log('Server is running');
+})
+````
+
+6、安装art-template
+
+````shell
+npm install --save art-template
+npm install --save express-art-template
+````
+
+7、配置art-template
+
+````javascript
+app.engine('html', require('express-art-template'))
+````
+
+8、引入静态文件
+
+````javascript
+app.use('/node_modules/', express.static('./node_modules/'))
+app.use('/public/', express.static('./public/'))
+````
+
+9、读取文件
+
+````javascript
+// readFile第二个参数是可选的，属于编码方式
+  fs.readFile('./db.json', 'utf8', function (err, data) {
+    if (err) {
+      return res.status(500).send('Server error.')
+    }
+    res.render('index.html', {
+      students: JSON.parse(data).students
+    })
+  })
+````
+
+完整代码
+
+````javascript
+const express = require('express')
+const app = express()
+const fs = require('fs')
+
+// 引入模板
+app.engine('html', require('express-art-template'))
+// 引入静态文件
+app.use('/node_modules/', express.static('./node_modules/'))
+app.use('/public/', express.static('./public/'))
+
+app.get('/', function (req, res) {
+  // readFile第二个参数是可选的，属于编码方式
+  fs.readFile('./db.json', 'utf8', function (err, data) {
+    if (err) {
+      return res.status(500).send('Server error.')
+    }
+    res.render('index.html', {
+      students: JSON.parse(data).students
+    })
+  })
+})
+
+app.listen(8080, function () {
+  console.log('Server is running');
+})
+````
+

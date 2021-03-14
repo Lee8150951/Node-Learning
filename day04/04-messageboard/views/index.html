@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/public/css/bootstrap.css">
+  <link rel="stylesheet" href="/public/css/index.css">
+</head>
+<body>
+  <div class="main">
+    <div class="row">
+      <div class="col-md-6">
+        <h2 class="title">Chat List</h2>
+      </div>
+      <div class="col-md-6 add-btn">
+        <a type="button" class="btn btn-success" href="/form">新建</a>
+      </div>
+    </div>
+    <div class="row list">
+      <div class="col-md-7">
+        {{each chats}}
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-md-9">
+                <h3 class="panel-title">{{$value.name}}</h3>
+              </div>
+              <div class="col-md-3">
+                <h3 class="panel-title chat-time">{{$value.chat_time}}</h3>
+              </div>
+            </div>
+          </div>
+          <div class="panel-body">
+            {{$value.info}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
