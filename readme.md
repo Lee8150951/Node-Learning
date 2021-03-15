@@ -957,3 +957,255 @@ fn(function (data) {
 })
 ````
 
+## Day05
+
+### 回调函数
+
+在JavaScript中函数是一种数据类型，可以作为一种参数而存在
+
+一般情况下，把函数作为参数的目的就是为了获取函数内部的异步操作结果
+
+1、首先理解什么是异步编程，下面是一个例子
+
+````javascript
+// Js异步
+console.log(1)
+
+setTimeout(function () {
+  console.log(2)
+}, 1000)
+
+console.log(3);
+// 在这个顺序中，由于setTimeout函数的存在，导致程序不再按照从上至下的顺序执行
+// 这个程序的输出结果将不再是123而是132
+````
+
+js代码在执行过程中不会等待计时器（哪怕设置的是0s）都是执行完其他后再执行
+
+这就是**JavaScript的单线程、事件循环**
+
+2、根据上述思想，模拟出另外一个函数，如下：
+
+````javascript
+function add(x, y) {
+  console.log(x);
+  setTimeout(function () {
+    console.log("setTimeout");
+    var ret = x + y
+    return ret
+  }, 1000)
+  console.log(y);
+}
+
+console.log(add(1, 3))
+````
+
+同样的，这个程序执行下来输出顺序应该是1，3，undefined，setTimeout
+
+此外，还有一种情况也将被排除，道理相同，如下：
+
+````javascript
+function add(x, y) {
+  var ret
+  setTimeout(function () {
+    ret = x + y
+    return ret
+  }, 1000)
+  return ret
+}
+console.log(add(1, 3))  => undefined
+````
+
+3、由上可知，这种情况下一定要使用到回调函数来获取值
+
+理解一个概念：回调函数一般在执行操作完成之后调用
+
+````javascript
+function add(x, y, callback) {
+  console.log(1)
+  setTimeout(function () {
+    console.log(2)
+    var ret = x + y
+    callback(ret)
+  }, 1000)
+  console.log(3)
+}
+
+add(10, 20, function (ret) {
+  console.log(4)
+  console.log(ret);
+})
+
+console.log(5);
+````
+
+上述程序输出结果是1，3，5，2，4，30
+
+那么，这个程序可以理解为，程序的运行不再需要等待setTimeout的等待过程，而是在这个等待的过程中可以去执行别的操作（如本程序中的console.log(5)就属于别的操作），达成了异步的意义，另外，callback的设定相当于对setTimeout设置了一个’监视器‘，程序自动完成了serTimeout内的操作时会自动调用call-back函数，达成对数据的操作。因此，在callback函数中可以对setTimeout中的任何参数进行操作而不会受到影响。
+
+而在该程序中setTimeout就是对浏览器异步过程的一种模拟，因为真正的程序执行过程中诸如常用的：readFile、writeFile、readdir、Ajax都属于异步操作，不仅仅局限于setTimeout。
+
+### MongoDB简介
+
+关系型数据库：
+
+- 表就是一种关系，或者说是表与表之间存在关系
+- 所有的关系型数据库都需要通过sql语言来操作
+- 数据表支持约束
+
+非关系型数据库：
+
+- 非常灵活，也可以在非关系型数据库设置为关系
+- 有的非关系型数据库就是key-value键值对
+- MongoDB是最像关系型数据库的非关系型数据库
+- MongoDB不需要设计表结构
+- 可以任意向MongoDB中存入数据，没有结构性这么一说
+
+### MongoDB启动与结束
+
+开启服务:
+
+````shell
+mongodb
+# 如果想要修改默认的数据存储目录
+mongod --dbpath=数据存储目录路径
+# 如果修改了，则每次启动都需要使用以上代码
+````
+
+关闭服务：
+
+```shell
+Ctrl+c，或者直接关闭
+```
+
+连接数据库：
+
+```shell
+# 该命令默认连接本机的MongoDB服务
+mongo
+```
+
+退出数据库：
+
+````shell
+# 在连接状态输入exit退出连接
+exit
+````
+
+### MongoDB基本命令
+
+- 查看所有数据库
+
+   `show dbs`
+
+- 查看当前操作的数据库
+
+   `db`
+
+- 切换到指定数据库（如果没有会自动新建） 
+
+  `use 数据库名称`
+
+- 插入数据（示例）
+
+  `db.student.insertOne({"name": "jack"})`
+
+其中student是当前操作的数据库中的一个“集合”，相当于关系型数据库中的“表”
+
+- 查询当前数据库下所有的集合
+
+  `show collections`
+
+- 查询集合中的数据
+
+  `db.student.find()`
+
+**MongoDB中对存入数据没有任何限制，存入数据是不需要像关系型数据库要对表结构进行修改**
+
+### Mongoose
+
+Mongoose是基于官方MongoDB的mongodb包再一次进行了封装，功能是操作MongoDB
+
+````javascript
+// 引入mongoose包
+const mongoose = require('mongoose')
+
+// 连接MongoDB数据库
+mongoose.connect('mongodb://localhost/test')
+
+// 创建一个模型，在代码中设计数据库
+// Cat是集合名，希望这个集合当中存储的文档有一个name，name的要求是字符串类型
+// 虽然写的是Cat，但是最终生成的是名为cats的集合
+const Cat = mongoose.model('Cat', { name: String })
+
+// 实例化Cat
+const kitty = new Cat({ name: 'Zildjian' })
+
+// 持久化保存Kitty实例
+kitty.save().then(() => console.log('meow'))
+````
+
+### MongoDB结构
+
+- 可以有多个数据库
+- 一个数据库中可以有多个集合（表）
+- 一个集合中可以有多个文档（表记录）
+- 文档结构很灵活，没有任何限制
+- MongoDB很灵活，不需要像MySQL一样先建立数据库，表，设计表结构
+  - 在这里只需要插入数据库写清楚用的是哪个数据库的哪个集合就可以了
+
+````json
+{
+    qq: {
+        users: [
+            {name: "zhangsan", age: 15},
+            {name: "lisi", age: 20},
+            {name: "wangwu", age: 25},
+            {name: "maqi", age: 30}
+            ...
+        ],
+        products: [
+            ...
+        ],
+        ...
+    },
+    wechat: {...},
+    tim: {...}
+}
+````
+
+使用schema对文档结构进行约束
+
+````javascript
+const mongoose = require('mongoose')
+// 这个Schema就是一种数据模式
+const Schema = mongoose.Schema;
+
+// 连接数据库，这个数据库可以不用存在，会自动创建
+mongoose.connect('mongodb://localhost/test')
+
+// 通过代码设计文档结构（下面是一个user的集合模式）
+// 表示每个文档必须要有title, author, body等字段并应该符合设置的类型
+// 一般这些类型都是JavaScript原生支持的数据类型
+// 约束的目的就是避免出现脏数据，保证数据完整性// 以下是对用户的一种文档结构模式设计
+const userSchema = new Schema({
+  username: {
+    type: String,
+    // 这个required表明username字段是必填的
+    required: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  email: String
+})
+
+// 将文档结构发布为模型
+// mongoose.model()方法是为了将一个架构发布为model
+// 第一个参数：传入一个大写名词单数字符串来表示集合名称
+//            mongoose会自动将大写字母化为小写并形成一个小写复数的集合名词
+// 第二个参数：架构模板名称
+const User = mongoose.model('User', userSchema)
+````
+
