@@ -576,7 +576,7 @@ app.listen(8080, function () {
 })
 ````
 
-### Post方法在框架下的写法
+### Post方法数据解析
 
 获取post数据需要结合第三方包：body-parser
 
@@ -701,6 +701,259 @@ app.get('/', function (req, res) {
 
 app.listen(8080, function () {
   console.log('Server is running');
+})
+````
+
+### 路由设计
+
+项目中使用以下方式构建路由表
+
+| 请求方法 | 请求路径         | get参数 | post参数                   | 备注             |
+| -------- | ---------------- | ------- | -------------------------- | ---------------- |
+| GET      | /students        |         |                            | 渲染首页         |
+| GET      | /students/new    |         |                            | 渲染添加学生页面 |
+| POST     | /students        |         | name/age/gender/hobbies    | 处理添加学生请求 |
+| GET      | /students/edit   | id      |                            | 渲染编辑页面     |
+| POST     | /students/edit   |         | id/name/age/gender/hobbies | 处理编辑学生请求 |
+| GET      | /students/delete | id      |                            | 处理删除请求     |
+
+单独提出路由router.js
+
+````javascript
+const fs = require('fs')
+module.exports = function (app) {
+  app.get('/', function (req, res) {
+    // readFile第二个参数是可选的，属于编码方式
+    fs.readFile('./db.json', 'utf8', function (err, data) {
+      if (err) {
+        return res.status(500).send('Server error.')
+      }
+      res.render('index.html', {
+        students: JSON.parse(data).students
+      })
+    })
+  })
+}
+````
+
+在app.js中使用上述路由
+
+````javascript
+const express = require('express')
+const router = require('./router')
+const app = express()
+
+// 引入模板
+app.engine('html', require('express-art-template'))
+// 引入静态文件
+app.use('/node_modules/', express.static('./node_modules/'))
+app.use('/public/', express.static('./public/'))
+
+router(app)
+
+app.listen(8080, function () {
+  console.log('Server is running');
+})
+````
+
+### Express提供的路由服务
+
+router.js
+
+````javascript
+const fs = require('fs')
+const express = require('express')
+
+// 1、创建路由容器
+const router = express.Router()
+// 2、将路由都挂在上路由容器中
+router.get('/', function (req, res) {
+  // readFile第二个参数是可选的，属于编码方式
+  fs.readFile('./db.json', 'utf8', function (err, data) {
+    if (err) {
+      return res.status(500).send('Server error.')
+    }
+    res.render('index.html', {
+      students: JSON.parse(data).students
+    })
+  })
+})
+// 3、导出router
+module.exports = router
+````
+
+app.js
+
+````javascript
+const express = require('express')
+const router = require('./router')
+const app = express()
+
+// 引入模板
+app.engine('html', require('express-art-template'))
+// 引入静态文件
+app.use('/node_modules/', express.static('./node_modules/'))
+app.use('/public/', express.static('./public/'))
+
+// 将路由挂载至app服务中
+app.use(router)
+
+app.listen(8080, function () {
+  console.log('Server is running');
+})
+````
+
+app.js作为程序入口只需要执行以下职责即可：
+
+1、创建服务；
+
+2、做一些服务和相关配置；
+
+3、模板引擎；
+
+4、提供静态资源服务；
+
+5、解析post请求体（body-parser）
+
+6、挂载路由；
+
+7、监听端口
+
+### 持久化方法封装(Mapper)
+
+这种模块职责是操作文件（数据库）中的数据，只处理数据，不关心业务
+
+实例：
+
+````javascript
+const fs = require('fs')
+const dbPath = './db.json'
+/**
+ * 获取所有学生
+ */
+exports.findAll = function (callback) {
+  fs.readFile(dbPath, 'utf8', function (err, data) {
+    if (err) {
+      return callback(err)
+    }
+    callback(null, JSON.parse(data).students)
+  })
+}
+
+/**
+ * 查找单个学生
+ */
+exports.findById = function (id, callback) {
+  fs.readFile(dbPath, 'utf8', function (err, data) {
+    if (err) {
+      return callback(err)
+    }
+    let students = JSON.parse(data).students
+    let student = students.find(function (item) {
+      return item.id + '' === id
+    })
+    callback(null, student)
+  })
+}
+
+/**
+ * 添加学生
+ */
+exports.addStu = function (student, callback) {
+  fs.readFile(dbPath, 'utf8', function (err, data) {
+    if (err) {
+      return callback(err)
+    }
+    // 获取json中的数据
+    let students = JSON.parse(data).students
+    // 保证id不重复
+    if (students.length === 0) {
+      student.id = '1'
+    } else {
+      student.id = parseInt(students[students.length - 1].id) + 1 + ''
+    }
+    // 将数据写入数组中
+    students.push(student)
+    // 整理成json格式
+    let fileData = JSON.stringify({
+      students: students
+    })
+    // 写入数据，产生回调
+    fs.writeFile(dbPath, fileData, function (err) {
+      if (err) {
+        return callback(err)
+      }
+      callback(null)
+    })
+  })
+}
+
+/**
+ * 更新学生
+ */
+exports.editStu = function (student, callback) {
+  fs.readFile(dbPath, 'utf8', function (err, data) {
+    if (err) {
+      return callback(err)
+    }
+    let students = JSON.parse(data).students
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].id === student.id) {
+        students[i] = student
+      }
+    }
+    let fileData = JSON.stringify({
+      students: students
+    })
+    fs.writeFile(dbPath, fileData, function (err) {
+      if (err) {
+        return callback(err)
+      }
+      callback(null)
+    })
+  })
+}
+
+/**
+ * 删除学生
+ */
+exports.deleteStu = function (id, callback) {
+  fs.readFile(dbPath, 'utf8', function (err, data) {
+    if (err) {
+      return callback(err)
+    }
+    let students = JSON.parse(data).students
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].id === id) {
+        students.splice(i, 1)
+      }
+    }
+    let fileData = JSON.stringify({
+      students: students
+    })
+    fs.writeFile(dbPath, fileData, function (err) {
+      if (err) {
+        callback(err)
+      }
+      callback(null)
+    })
+  })
+}
+````
+
+**Tips：如果需要获取一个函数中异步操作的结果，则必须通过回调函数来获取，回调函数目的就是获取异步操作的结果**
+
+````javascript
+function fn (callback) {
+    // var callback = function (data) { console.log(data) }
+    setTimeout(function () {
+        var data = 'hello'
+        callback(data)
+    }, 1000)
+}
+
+fn(function (data) {
+    console.log(data)
 })
 ````
 

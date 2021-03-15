@@ -1,6 +1,11 @@
 const express = require('express')
+const router = require('./router')
 const app = express()
-const fs = require('fs')
+const bodyParser = require('body-parser')
+
+// 配置模板引擎body-parser一定要在app.use(router)挂在路由之前
+app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.json())
 
 // 引入模板
 app.engine('html', require('express-art-template'))
@@ -8,17 +13,8 @@ app.engine('html', require('express-art-template'))
 app.use('/node_modules/', express.static('./node_modules/'))
 app.use('/public/', express.static('./public/'))
 
-app.get('/', function (req, res) {
-  // readFile第二个参数是可选的，属于编码方式
-  fs.readFile('./db.json', 'utf8', function (err, data) {
-    if (err) {
-      return res.status(500).send('Server error.')
-    }
-    res.render('index.html', {
-      students: JSON.parse(data).students
-    })
-  })
-})
+// 将路由挂载至app服务中
+app.use(router)
 
 app.listen(8080, function () {
   console.log('Server is running');

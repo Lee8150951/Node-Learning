@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
@@ -10,9 +9,7 @@
     <link rel="icon" href="../../favicon.ico">
     <title>Index</title>
     <link href="/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
     <link href="/public/css/dashboard.css" rel="stylesheet">
-    <script src="../../assets/js/ie-emulation-modes-warning.js"></script>
   </head>
 
   <body>
@@ -67,7 +64,7 @@
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <div>
             <h1 class="page-header">Dashboard</h1>
-            <button type="button" class="btn btn-primary">Add New</button>
+            <a type="button" class="btn btn-primary" href="/students/new">Add New</a>
           </div>
           <div class="table-responsive">
             <table class="table table-striped">
@@ -78,6 +75,7 @@
                   <th>性别</th>
                   <th>年龄</th>
                   <th>爱好</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -88,6 +86,10 @@
                   <td>{{ $value.gender }}</td>
                   <td>{{ $value.age }}</td>
                   <td>{{ $value.hobbies }}</td>
+                  <th>
+                    <a href="/students/edit?id={{ $value.id }}" type="button" class="btn btn-success btn-xs">Edit</a>
+                    <a href="/students/delete?id={{ $value.id }}" type="button" class="btn btn-danger btn-xs">Delete</a>
+                  </th>
                 </tr>
                 {{ /each }}
               </tbody>
@@ -96,11 +98,5 @@
         </div>
       </div>
     </div>
-
-    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="../../assets/js/vendor/holder.min.js"></script>
-    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
   </body>
 </html>
