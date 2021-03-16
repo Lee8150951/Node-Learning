@@ -42,3 +42,60 @@ const userSchema = new Schema({
 //            mongoose会自动将大写字母化为小写并形成一个小写复数的集合名词
 // 第二个参数：架构模板名称
 const User = mongoose.model('User', userSchema)
+
+// 增加数据，首先使用new实例对象即可
+let admin = new User({
+  username: '张三',
+  password: 'root',
+  email: 'zhangsan@admin.com'
+})
+// save方法进行存储
+admin.save(function (err, ret) {
+  if (err) {
+    console.log('Create ERROR!')
+  } else {
+    console.log('Create SUCCESS!')
+  }
+})
+
+// 查询所有数据
+User.find(function (err, ret) {
+  if (err) {
+    console.log('Retrieve ERROR!')
+  } else {
+    console.log(ret)
+  }
+})
+
+// 查询指定数据
+User.find({
+  username: '张三'
+}, function (err, ret) {
+  if (err) {
+    console.log('Retrieve ERROR!')
+  } else {
+    console.log(ret)
+  }
+})
+
+// 删除数据
+User.remove({
+  username: '张三'
+}, function (err, ret) {
+  if (err) {
+    console.log('Remove ERROR!')
+  } else {
+    console.log('Remove SUCCESS!')
+  }
+})
+
+// 更新数据(一个参数ID，第二个参数更改内容，第三个参数回调)
+User.findByIdAndUpdate('60506bb62a5c242dac7b8056', {
+  password: '123'
+}, function (err, ret) {
+  if (err) {
+    console.log('Update ERROR!')
+  } else {
+    console.log('Update SUCCESS!')
+  }
+})

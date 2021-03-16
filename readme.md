@@ -1209,3 +1209,82 @@ const userSchema = new Schema({
 const User = mongoose.model('User', userSchema)
 ````
 
+### Mongoose增加数据
+
+````javascript
+// 增加数据，首先使用new实例对象即可
+let admin = new User({
+  username: 'admin',
+  password: 'root',
+  email: 'admin@admin.com'
+})
+// save方法进行存储
+admin.save(function (err, ret) {
+  if (err) {
+    console.log('MONGOOSE ERROR!')
+  } else {
+    console.log('MONGOOSE SUCCESS!'
+  }
+})
+````
+
+### Mongoose查询数据
+
+查询所有：
+
+````javascript
+User.find(function (err, ret) {
+  if (err) {
+    console.log('MONGOOSE ERROR!')
+  } else {
+    console.log(ret)
+  }
+})
+````
+
+按条件查询：
+
+````javascript
+// 查询指定数据
+User.find({
+  username: '张三'
+}, function (err, ret) {
+  if (err) {
+    console.log('MONGOOSE ERROR!')
+  } else {
+    console.log(ret)
+  }
+})
+````
+
+使用find方法查询出来的数据就算只有一个也会形成数组
+
+### Mongoose删除数据
+
+````javascript
+// 删除数据
+User.remove({
+  username: '张三'
+}, function (err, ret) {
+  if (err) {
+    console.log('Remove ERROR!')
+  } else {
+    console.log('Remove SUCCESS!')
+  }
+})
+````
+
+### Mongoose修改数据
+
+````javascript
+User.findByIdAndUpdate('60506bb62a5c242dac7b8056', {
+  password: '123'
+}, function (err, ret) {
+  if (err) {
+    console.log('Update ERROR!')
+  } else {
+    console.log('Update SUCCESS!')
+  }
+})
+````
+

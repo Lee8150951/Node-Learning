@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+    <title>New</title>
+    <link href="/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/public/css/new.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <form class="form-signin" action="/students/new" method="post">
+        <h2 class="form-signin-heading">Add Students</h2>
+        <label for="inputEmail" class="sr-only">Name</label>
+        <input type="text" name="name" class="form-control" placeholder="Name..." required autofocus>
+        <div style="padding: 20px 0;">
+          <label for="inputPassword" class="sr-only">Gender</label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" value="0"> Male
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" value="1"> Female
+          </label>
+        </div>
+        <label for="inputEmail" class="sr-only">Age</label>
+        <input type="number" name="age" class="form-control" placeholder="Age..." required autofocus>
+        <label for="inputEmail" class="sr-only">Hobbies</label>
+        <input type="text" name="hobbies" class="form-control" placeholder="Hobbies..." required autofocus style="margin-top: 20px;">
+        
+        <button class="btn btn-lg btn-primary btn-block" type="submit" style="margin-top: 20px;">Add</button>
+      </form>
+
+    </div>
+  </body>
+</html>
