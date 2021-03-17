@@ -1288,3 +1288,259 @@ User.findByIdAndUpdate('60506bb62a5c242dac7b8056', {
 })
 ````
 
+### CRUD改造
+
+student.js:
+
+````javascript
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
+mongoose.connect('mongodb://localhost:27017/students')
+
+const studentSchema = new Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  gender: {
+    type: Number,
+    enum: [0, 1], // 枚举，必须是0，1
+    default: 0
+  },
+  age: {
+    type: Number
+  },
+  hobbies: {
+    type: String
+  }
+})
+
+module.exports = mongoose.model('Student', studentSchema)
+````
+
+router.js：
+
+````javascript
+const fs = require('fs')
+const express = require('express')
+// 引入Student
+const Student = require('./student')
+
+// 1、创建路由容器
+const router = express.Router()
+// 2、将路由都挂在上路由容器中
+router.get('/students', function (req, res) {
+  Student.find(function (err, students) {
+    if (err) {
+      return res.status(500).send('Error Page')
+    }
+    res.render('index.html', {
+      students: students
+    })
+  })
+})
+
+router.get('/students/new', function (req, res) {
+  res.render('new.html')
+})
+
+router.post('/students/new', function (req, res) {
+  new Student(req.body).save(function (err) {
+    if (err) {
+      return res.status(500).send('Error Page')
+    }
+    res.redirect('/students')
+  })
+})
+
+router.get('/students/edit', function (req, res) {
+  let id = req.query.id
+  Student.findById(id, function (err, student) {
+    if (err) {
+      return res.status(500).send('Error Page')
+    }
+    res.render('edit.html', {
+      student: student
+    })
+  })
+})
+
+router.post('/students/edit', function (req, res) {
+  Student.findByIdAndUpdate(req.query.id, req.body, function (err) {
+    if (err) {
+      return res.status(500).send('Error Page')
+    }
+    res.redirect('/students')
+  })
+})
+
+router.get('/students/delete', function (req, res) {
+  Student.findByIdAndDelete(req.query.id, function(err) {
+    if (err) {
+      return res.status(500).send('Error Page')
+    }
+    res.redirect('/students')
+  })
+})
+// 3、导出router
+module.exports = router
+````
+
+## Day06
+
+### 回调地狱
+
+回调地狱缺点是嵌套过深，导致代码难以维护
+
+````javascript
+const fs = require('fs')
+// 异步代码，这三个文件顺序不一定一样
+// 如果要求执行顺序就会产生回调地狱，如下
+fs.readFile('./data/01.txt', function (err, data) {
+  if (err) {
+    // 抛出异常
+    // 相当于return console.log('读取失败')
+    throw err
+  }
+  console.log(data.toString())
+  fs.readFile('./data/02.txt', function (err, data) {
+    if (err) {
+      throw err
+    }
+    console.log(data.toString())
+    fs.readFile('./data/03.txt', function (err, data) {
+      if (err) {
+        throw err
+      }
+      console.log(data.toString())
+    })
+  })
+})
+````
+
+### Promise语法
+
+为解决回调地狱产生的问题，EcmaScript6新增了一个新的API：Promise
+
+Promise简单理解就是一个容器，表明的是将来可能完成的一个任务，如下所示：
+
+![捕获.PNG](https://i.loli.net/2021/03/17/UK9ZPaGHCFQrodJ.png)
+
+使用方法：
+
+````javascript
+// Promise是一个构造函数（和node没关系，浏览器也能用）
+const fs = require('fs')
+// 创建Promise容器
+// 1、创建Promise(容器内部写入一个函数，这个函数属于一个异步任务)
+// 容器一旦创建就开始执行
+const demo = new Promise(function (resolve, reject) {
+  fs.readFile('./data/01.txt', 'utf8', function (err, data) {
+    if (err) {
+      // 承诺容器中的任务失败
+      // 将容器的pending状态转为reject
+      reject(err)
+    } else {
+      // 承诺容器中的任务成功
+      // 将容器的pending状态转为resolve
+      resolve(data)
+    }
+  })
+})
+
+// demo就是承诺容器
+// 当demo成功了，然后(then)做指定的操作(在函数中)
+// then方法接收的就是容器中的resolve函数
+demo.then(function (data) {
+  console.log(data);
+}, function (err) {
+  console.log('ERROR:' + err);
+})
+````
+
+异步调用链式编程：
+
+````javascript
+const fs = require('fs')
+
+const p1 = new Promise(function (resolve, reject) {
+  fs.readFile('./data/01.txt', 'utf8', function (err, data) {
+    if (err) {
+      reject(err)
+    } else {
+      resolve(data)
+    }
+  })
+})
+
+const p2 = new Promise(function (resolve, reject) {
+  fs.readFile('./data/02.txt', 'utf8', function (err, data) {
+    if (err) {
+      reject(err)
+    } else {
+      resolve(data)
+    }
+  })
+})
+
+const p3 = new Promise(function (resolve, reject) {
+  fs.readFile('./data/03.txt', 'utf8', function (err, data) {
+    if (err) {
+      reject(err)
+    } else {
+      resolve(data)
+    }
+  })
+})
+
+p1
+  .then(function (data) {
+    console.log(data)
+    return p2
+  }, function (err) {
+    console.log("ERR P1")
+  })
+  .then(function (data) {
+    console.log(data)
+    return p3
+  }, function (err) {
+    console.log("ERR P2")
+  })
+  .then(function (data) {
+    console.log(data)
+  }, function (err) {
+    console.log("ERR P3")
+  })
+````
+
+函数封装Promise：
+
+````javascript
+const fs = require('fs')
+
+function ReadFile(filePath) {
+  return new Promise(function (resolve, reject) {
+    fs.readFile(filePath, 'utf8', function (err, data) {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+  })
+}
+
+ReadFile('./data/01.txt')
+  .then(function (data) {
+    console.log(data)
+    return ReadFile('./data/02.txt')
+  })
+  .then(function (data) {
+    console.log(data)
+    return ReadFile('./data/03.txt')
+  })
+  .then(function (data) {
+    console.log(data);
+  })
+````
+
